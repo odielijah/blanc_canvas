@@ -28,19 +28,19 @@ export default function QueryPreview() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
+      <div className="flex flex-col gap-2 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
         <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">
           Live Preview
         </span>
-        <div className="flex items-center gap-2">
+        <div className="grid w-full grid-cols-1 gap-2 min-[380px]:grid-cols-[1fr_auto] sm:w-auto sm:flex sm:items-center">
           {/* Format tabs */}
-          <div className="flex rounded-lg overflow-hidden border border-zinc-200 dark:border-zinc-700">
+          <div className="grid min-w-0 grid-cols-3 overflow-hidden rounded-lg border border-zinc-200 dark:border-zinc-700">
             {FORMAT_OPTIONS.map((opt) => (
               <button
                 key={opt.value}
                 onClick={() => setFormat(opt.value)}
                 className={`
-                  px-3 py-1.5 text-xs font-semibold transition-all
+                  min-w-0 px-2 py-1.5 text-xs font-semibold transition-all sm:px-3
                   ${
                     format === opt.value
                       ? "bg-zinc-800 dark:bg-zinc-100 text-white dark:text-zinc-900"
@@ -48,7 +48,7 @@ export default function QueryPreview() {
                   }
                 `}
               >
-                {opt.label}
+                <span className="block truncate">{opt.label}</span>
               </button>
             ))}
           </div>
@@ -56,7 +56,7 @@ export default function QueryPreview() {
           {/* Copy button */}
           <button
             onClick={handleCopy}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-500 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all"
+            className="flex min-w-0 items-center justify-center gap-1.5 rounded-lg border border-zinc-200 px-2.5 py-1.5 text-xs text-zinc-500 transition-all hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
           >
             {copied ? (
               <>
@@ -71,7 +71,7 @@ export default function QueryPreview() {
                 >
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
-                Copied!
+                <span className="truncate">Copied!</span>
               </>
             ) : (
               <>
@@ -87,7 +87,7 @@ export default function QueryPreview() {
                   <rect x="9" y="9" width="13" height="13" rx="2" />
                   <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
                 </svg>
-                Copy
+                <span className="truncate">Copy</span>
               </>
             )}
           </button>
@@ -96,7 +96,7 @@ export default function QueryPreview() {
 
       {/* Code */}
       <div className="flex-1 overflow-auto">
-        <pre className="p-4 text-xs font-mono leading-relaxed text-zinc-800 dark:text-zinc-200 whitespace-pre">
+        <pre className="min-w-0 p-4 text-xs font-mono leading-relaxed text-zinc-800 dark:text-zinc-200 whitespace-pre-wrap break-words">
           <code>{preview}</code>
         </pre>
       </div>

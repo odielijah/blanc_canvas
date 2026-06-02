@@ -49,8 +49,8 @@ export default function ResultsPanel() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-2 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 flex-wrap items-center gap-3">
           <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">
             Results
           </span>
@@ -65,11 +65,11 @@ export default function ResultsPanel() {
           onClick={handleRun}
           disabled={isRunning || errors.length > 0}
           className={`
-            flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all
+            flex w-full items-center justify-center gap-2 rounded-lg px-4 py-1.5 text-sm font-semibold transition-all sm:w-auto
             ${
               errors.length > 0
                 ? "opacity-40 cursor-not-allowed bg-zinc-200 dark:bg-zinc-700 text-zinc-500"
-                : "bg-violet-600 hover:bg-violet-700 active:scale-95 text-white shadow-sm"
+                : "bg-violet-600 hover:bg-violet-700 active:scale-95 text-white"
             }
           `}
         >

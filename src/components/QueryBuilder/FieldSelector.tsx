@@ -19,7 +19,7 @@ const FieldSelector = memo(function FieldSelector({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="rule-select w-36 flex-shrink-0"
+      className="rule-select w-full flex-shrink-0 sm:w-36"
       aria-label="Field"
     >
       {schema.fields.map((f) => (

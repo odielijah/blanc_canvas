@@ -19,7 +19,7 @@ const OperatorSelector = memo(function OperatorSelector({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value as Operator)}
-      className="rule-select w-44 flex-shrink-0"
+      className="rule-select w-full flex-shrink-0 sm:w-44"
       aria-label="Operator"
     >
       {operators.map((op) => (
