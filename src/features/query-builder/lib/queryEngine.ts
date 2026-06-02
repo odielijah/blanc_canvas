@@ -2,40 +2,72 @@ import { QueryGroup, QueryRule, QueryFormat } from "@/shared/types/query";
 
 // ── SQL Generator ─────────────────────────────────────────────────────────────
 
+function sqlIdentifier(value: string): string {
+  return `\`${value.replace(/`/g, "``")}\``;
+}
+
+function sqlString(value: unknown): string {
+  return `'${String(value).replace(/'/g, "''")}'`;
+}
+
+function sqlLiteral(value: unknown): string {
+  return typeof value === "number" || typeof value === "boolean"
+    ? String(value)
+    : sqlString(value);
+}
+
+function sqlComparable(value: unknown): string {
+  if (typeof value === "number") return String(value);
+  if (
+    typeof value === "string" &&
+    value.trim() !== "" &&
+    Number.isFinite(Number(value))
+  ) {
+    return value;
+  }
+  return sqlString(value);
+}
+
+function toList(value: QueryRule["value"]): unknown[] {
+  return Array.isArray(value)
+    ? value
+    : String(value)
+        .split(",")
+        .map((v) => v.trim())
+        .filter(Boolean);
+}
+
 function ruleToSQL(rule: QueryRule): string {
   const { field, operator, value } = rule;
-  const f = `\`${field}\``;
-
-  const quote = (v: unknown) =>
-    typeof v === "string" ? `'${v.replace(/'/g, "''")}'` : String(v);
+  const f = sqlIdentifier(field);
 
   switch (operator) {
-    case "equals":             return `${f} = ${quote(value)}`;
-    case "not_equals":         return `${f} != ${quote(value)}`;
-    case "contains":           return `${f} LIKE '%${value}%'`;
-    case "not_contains":       return `${f} NOT LIKE '%${value}%'`;
-    case "starts_with":        return `${f} LIKE '${value}%'`;
-    case "ends_with":          return `${f} LIKE '%${value}'`;
-    case "greater_than":       return `${f} > ${value}`;
-    case "less_than":          return `${f} < ${value}`;
-    case "greater_than_or_equal": return `${f} >= ${value}`;
-    case "less_than_or_equal": return `${f} <= ${value}`;
+    case "equals":             return `${f} = ${sqlLiteral(value)}`;
+    case "not_equals":         return `${f} != ${sqlLiteral(value)}`;
+    case "contains":           return `${f} LIKE ${sqlString(`%${value}%`)}`;
+    case "not_contains":       return `${f} NOT LIKE ${sqlString(`%${value}%`)}`;
+    case "starts_with":        return `${f} LIKE ${sqlString(`${value}%`)}`;
+    case "ends_with":          return `${f} LIKE ${sqlString(`%${value}`)}`;
+    case "greater_than":       return `${f} > ${sqlComparable(value)}`;
+    case "less_than":          return `${f} < ${sqlComparable(value)}`;
+    case "greater_than_or_equal": return `${f} >= ${sqlComparable(value)}`;
+    case "less_than_or_equal": return `${f} <= ${sqlComparable(value)}`;
     case "is_null":            return `${f} IS NULL`;
     case "is_not_null":        return `${f} IS NOT NULL`;
-    case "regex":              return `${f} REGEXP '${value}'`;
+    case "regex":              return `${f} REGEXP ${sqlString(value)}`;
     case "between": {
       const [a, b] = Array.isArray(value) ? value : [value, value];
-      return `${f} BETWEEN ${a} AND ${b}`;
+      return `${f} BETWEEN ${sqlComparable(a)} AND ${sqlComparable(b)}`;
     }
     case "in_array": {
-      const vals = Array.isArray(value) ? value : String(value).split(",").map((v) => v.trim());
-      return `${f} IN (${vals.map(quote).join(", ")})`;
+      const vals = toList(value);
+      return `${f} IN (${vals.map(sqlLiteral).join(", ")})`;
     }
     case "not_in_array": {
-      const vals = Array.isArray(value) ? value : String(value).split(",").map((v) => v.trim());
-      return `${f} NOT IN (${vals.map(quote).join(", ")})`;
+      const vals = toList(value);
+      return `${f} NOT IN (${vals.map(sqlLiteral).join(", ")})`;
     }
-    default: return `${f} = ${quote(value)}`;
+    default: return `${f} = ${sqlLiteral(value)}`;
   }
 }
 
@@ -73,18 +105,26 @@ export function generateSQL(group: QueryGroup, tableName = "records"): string {
 
 // ── Mongo Generator ───────────────────────────────────────────────────────────
 
+function escapeRegex(value: unknown): string {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 function ruleToMongo(rule: QueryRule): Record<string, unknown> {
   const { field, operator, value } = rule;
 
-  const numVal = typeof value === "string" ? parseFloat(value) || value : value;
+  const parsedNumber = typeof value === "string" ? Number(value) : value;
+  const numVal =
+    typeof parsedNumber === "number" && Number.isFinite(parsedNumber)
+      ? parsedNumber
+      : value;
 
   switch (operator) {
     case "equals":             return { [field]: value };
     case "not_equals":         return { [field]: { $ne: value } };
-    case "contains":           return { [field]: { $regex: value, $options: "i" } };
-    case "not_contains":       return { [field]: { $not: { $regex: value, $options: "i" } } };
-    case "starts_with":        return { [field]: { $regex: `^${value}` } };
-    case "ends_with":          return { [field]: { $regex: `${value}$` } };
+    case "contains":           return { [field]: { $regex: escapeRegex(value), $options: "i" } };
+    case "not_contains":       return { [field]: { $not: { $regex: escapeRegex(value), $options: "i" } } };
+    case "starts_with":        return { [field]: { $regex: `^${escapeRegex(value)}` } };
+    case "ends_with":          return { [field]: { $regex: `${escapeRegex(value)}$` } };
     case "greater_than":       return { [field]: { $gt: numVal } };
     case "less_than":          return { [field]: { $lt: numVal } };
     case "greater_than_or_equal": return { [field]: { $gte: numVal } };
@@ -97,11 +137,11 @@ function ruleToMongo(rule: QueryRule): Record<string, unknown> {
       return { [field]: { $gte: a, $lte: b } };
     }
     case "in_array": {
-      const vals = Array.isArray(value) ? value : String(value).split(",").map((v) => v.trim());
+      const vals = toList(value);
       return { [field]: { $in: vals } };
     }
     case "not_in_array": {
-      const vals = Array.isArray(value) ? value : String(value).split(",").map((v) => v.trim());
+      const vals = toList(value);
       return { [field]: { $nin: vals } };
     }
     default: return { [field]: value };
@@ -138,16 +178,31 @@ export function generateMongo(group: QueryGroup): string {
 
 // ── GraphQL Generator ─────────────────────────────────────────────────────────
 
+function gqlLiteral(value: unknown): string {
+  return typeof value === "string" ? JSON.stringify(value) : String(value);
+}
+
+function gqlComparable(value: unknown): string {
+  if (typeof value === "number") return String(value);
+  if (
+    typeof value === "string" &&
+    value.trim() !== "" &&
+    Number.isFinite(Number(value))
+  ) {
+    return value;
+  }
+  return gqlLiteral(value);
+}
+
 function ruleToGQL(rule: QueryRule): string {
   const { field, operator, value } = rule;
-  const quoted = typeof value === "string" ? `"${value}"` : String(value);
 
   switch (operator) {
-    case "equals":             return `${field}: { eq: ${quoted} }`;
-    case "not_equals":         return `${field}: { neq: ${quoted} }`;
-    case "contains":           return `${field}: { ilike: "%${value}%" }`;
-    case "starts_with":        return `${field}: { startsWith: "${value}" }`;
-    case "ends_with":          return `${field}: { endsWith: "${value}" }`;
+    case "equals":             return `${field}: { eq: ${gqlLiteral(value)} }`;
+    case "not_equals":         return `${field}: { neq: ${gqlLiteral(value)} }`;
+    case "contains":           return `${field}: { ilike: ${gqlLiteral(`%${value}%`)} }`;
+    case "starts_with":        return `${field}: { startsWith: ${gqlLiteral(value)} }`;
+    case "ends_with":          return `${field}: { endsWith: ${gqlLiteral(value)} }`;
     case "greater_than":       return `${field}: { gt: ${value} }`;
     case "less_than":          return `${field}: { lt: ${value} }`;
     case "greater_than_or_equal": return `${field}: { gte: ${value} }`;
@@ -156,13 +211,13 @@ function ruleToGQL(rule: QueryRule): string {
     case "is_not_null":        return `${field}: { isNull: false }`;
     case "between": {
       const [a, b] = Array.isArray(value) ? value : [value, value];
-      return `${field}: { gte: ${a}, lte: ${b} }`;
+      return `${field}: { gte: ${gqlComparable(a)}, lte: ${gqlComparable(b)} }`;
     }
     case "in_array": {
-      const vals = Array.isArray(value) ? value : String(value).split(",").map((v) => v.trim());
-      return `${field}: { in: [${vals.map((v) => `"${v}"`).join(", ")}] }`;
+      const vals = toList(value);
+      return `${field}: { in: [${vals.map(gqlLiteral).join(", ")}] }`;
     }
-    default: return `${field}: { eq: ${quoted} }`;
+    default: return `${field}: { eq: ${gqlLiteral(value)} }`;
   }
 }
 
