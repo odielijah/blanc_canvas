@@ -5,7 +5,7 @@ import { executeQuery } from "@/lib/queryExecutor";
 import { SCHEMAS } from "@/lib/schema";
 import { validateQuery } from "@/lib/validators";
 
-export function ResultsPanel() {
+export default function ResultsPanel() {
   const { root, schemaId } = useQueryStore();
   const schema = SCHEMAS.find((s) => s.id === schemaId)!;
 
