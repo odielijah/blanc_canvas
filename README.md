@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Blanc.
+
+Blanc is a visual query builder built with Next.js. It lets you compose nested filter rules, preview the generated query in multiple formats, and run the query against local mock data.
+
+## Features
+
+- Build nested `AND` / `OR` condition groups with drag-and-drop ordering.
+- Choose from bundled `Users`, `Products`, and `Orders` schemas.
+- Generate live query previews for SQL, MongoDB, and GraphQL.
+- Run filters against mock data and inspect paginated results.
+- Save presets, restore history, import/export query JSON, and persist the active query across page refreshes.
+- Switch between built-in themes.
+
+## Tech Stack
+
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- Zustand with Immer
+- dnd-kit
+- Vitest
 
 ## Getting Started
 
-First, run the development server:
+Install dependencies:
+
+```bash
+npm install
+```
+
+Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev        # Start the local dev server
+npm run build      # Create a production build
+npm run start      # Start the production server
+npm run lint       # Run ESLint
+npm test           # Run the test suite once
+npm run test:watch # Run tests in watch mode
+```
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```text
+src/app/
+  layout.tsx                 # App shell metadata, font, and theme bootstrap
+  page.tsx                   # Main page entry
+  globals.css                # Global styles and theme tokens
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+src/features/query-builder/
+  components/                # Query builder UI panels and controls
+  lib/queryEngine.ts         # SQL, MongoDB, and GraphQL query generation
+  lib/queryExecutor.ts       # Mock-data query execution
+  lib/schema.ts              # Built-in schemas and mock data
+  lib/validators.ts          # Query validation
+  store/queryStore.ts        # Zustand query state and persistence
+  theme/themes.ts            # Theme configuration
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+src/shared/types/query.ts    # Query, schema, and operator types
+src/__tests__/               # Query engine and executor tests
+```
 
-## Deploy on Vercel
+## Query JSON
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Queries are represented as a tree of groups and rules. Exported queries can be imported later or edited by hand.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```json
+{
+  "id": "root",
+  "type": "group",
+  "logic": "AND",
+  "children": [
+    {
+      "id": "rule-1",
+      "type": "rule",
+      "field": "age",
+      "operator": "greater_than_or_equal",
+      "value": "18"
+    }
+  ],
+  "collapsed": false
+}
+```
+
+## Notes
+
+- The active query state is persisted in browser `localStorage` under `qb-query-store`.
+- Theme preference is persisted separately under `qb-theme`.
+- Production builds use `next/font` to fetch Bricolage Grotesque from Google Fonts, so the first build needs network access.
