@@ -55,11 +55,22 @@ function evalRule(row: Record<string, unknown>, rule: QueryRule): boolean {
     case "between": {
       const arr = Array.isArray(rule.value) ? rule.value : [];
       if (arr.length < 2) return true;
-      const n = parseFloat(String(raw));
+      const n = Number(raw);
+      const min = Number(arr[0]);
+      const max = Number(arr[1]);
+      if (Number.isFinite(n) && Number.isFinite(min) && Number.isFinite(max)) {
+        return n >= min && n <= max;
+      }
+
+      const date = new Date(String(raw)).getTime();
+      const start = new Date(String(arr[0])).getTime();
+      const end = new Date(String(arr[1])).getTime();
       return (
-        !isNaN(n) &&
-        n >= parseFloat(String(arr[0])) &&
-        n <= parseFloat(String(arr[1]))
+        !isNaN(date) &&
+        !isNaN(start) &&
+        !isNaN(end) &&
+        date >= start &&
+        date <= end
       );
     }
     case "in_array": {
