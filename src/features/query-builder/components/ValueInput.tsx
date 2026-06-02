@@ -1,4 +1,4 @@
-import type { FieldType, QueryRule } from "@/types/query";
+import type { FieldType, QueryRule } from "@/shared/types/query";
 
 interface ValueInputProps {
   rule: QueryRule;
@@ -31,7 +31,7 @@ export default function ValueInput({
           className={`${cls} min-w-24 flex-1`}
           aria-label="Minimum value"
         />
-        <span className="text-xs text-zinc-400">–</span>
+        <span className="text-muted-theme text-xs">-</span>
         <input
           type="number"
           value={arr[1]}

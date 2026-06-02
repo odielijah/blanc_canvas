@@ -1,6 +1,6 @@
 "use client";
 import { memo } from "react";
-import { SCHEMAS } from "@/lib/schema";
+import { SCHEMAS } from "@/features/query-builder/lib/schema";
 
 interface Props {
   schemaId: string;

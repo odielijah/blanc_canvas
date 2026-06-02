@@ -1,4 +1,4 @@
-import { QueryGroup, QueryRule, Operator } from "@/types/query";
+import { QueryGroup, QueryRule, Operator } from "@/shared/types/query";
 import { MOCK_DATA } from "./schema";
 
 // ── Single rule evaluator ──────────────────────────────────────────────────

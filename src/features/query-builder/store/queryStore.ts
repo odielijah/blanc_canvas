@@ -7,22 +7,10 @@ import {
   QueryNode,
   QueryState,
   LogicOperator,
-  Operator,
   QueryFormat,
-} from "@/types/query";
+} from "@/shared/types/query";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
-
-function findParent(group: QueryGroup, targetId: string): QueryGroup | null {
-  for (const child of group.children) {
-    if (child.id === targetId) return group;
-    if (child.type === "group") {
-      const found = findParent(child as QueryGroup, targetId);
-      if (found) return found;
-    }
-  }
-  return null;
-}
 
 function findNode(group: QueryGroup, id: string): QueryNode | null {
   if (group.id === id) return group;

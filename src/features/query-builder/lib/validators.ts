@@ -1,18 +1,20 @@
 import {
   QueryGroup,
   QueryRule,
-  QueryNode,
   ValidationError,
-  FieldType,
-  Operator,
   OPERATORS_BY_TYPE,
-} from "@/types/query";
-import { DataSchema } from "@/types/query";
+  DataSchema,
+} from "@/shared/types/query";
+
+interface ValidateQueryOptions {
+  requireComplete?: boolean;
+}
 
 function validateRule(
   rule: QueryRule,
   schema: DataSchema,
   errors: ValidationError[],
+  options: ValidateQueryOptions,
 ) {
   const field = schema.fields.find((f) => f.name === rule.field);
 
@@ -40,12 +42,20 @@ function validateRule(
     needsValue &&
     (rule.value === "" || rule.value === null || rule.value === undefined)
   ) {
-    errors.push({ nodeId: rule.id, message: "Value is required" });
+    if (options.requireComplete) {
+      errors.push({ nodeId: rule.id, message: "Value is required" });
+    }
     return;
   }
 
   if (rule.operator === "between") {
     const arr = Array.isArray(rule.value) ? rule.value : [];
+    if (arr.length === 0 || (arr[0] === "" && arr[1] === "")) {
+      if (options.requireComplete) {
+        errors.push({ nodeId: rule.id, message: "Between requires two values" });
+      }
+      return;
+    }
     if (arr.length < 2 || arr[0] === "" || arr[1] === "") {
       errors.push({ nodeId: rule.id, message: "Between requires two values" });
     }
@@ -87,18 +97,19 @@ function validateGroup(
   group: QueryGroup,
   schema: DataSchema,
   errors: ValidationError[],
+  options: ValidateQueryOptions,
   depth = 0,
 ) {
-  if (depth > 0 && group.children.length === 0) {
+  if (options.requireComplete && depth > 0 && group.children.length === 0) {
     errors.push({ nodeId: group.id, message: "Group cannot be empty" });
     return;
   }
 
   for (const child of group.children) {
     if (child.type === "rule") {
-      validateRule(child as QueryRule, schema, errors);
+      validateRule(child as QueryRule, schema, errors, options);
     } else {
-      validateGroup(child as QueryGroup, schema, errors, depth + 1);
+      validateGroup(child as QueryGroup, schema, errors, options, depth + 1);
     }
   }
 }
@@ -106,9 +117,10 @@ function validateGroup(
 export function validateQuery(
   root: QueryGroup,
   schema: DataSchema,
+  options: ValidateQueryOptions = {},
 ): ValidationError[] {
   const errors: ValidationError[] = [];
-  validateGroup(root, schema, errors);
+  validateGroup(root, schema, errors, options);
   return errors;
 }
 
@@ -142,7 +154,7 @@ export function validateImportedJSON(json: string): {
       return { valid: false, error: 'Logic must be "AND" or "OR"' };
     }
     return { valid: true };
-  } catch (e) {
+  } catch {
     return { valid: false, error: "Invalid JSON" };
   }
 }

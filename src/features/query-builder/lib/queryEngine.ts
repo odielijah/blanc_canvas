@@ -1,4 +1,4 @@
-import { QueryGroup, QueryRule, QueryNode, Operator, QueryFormat } from "@/types/query";
+import { QueryGroup, QueryRule, QueryFormat } from "@/shared/types/query";
 
 // ── SQL Generator ─────────────────────────────────────────────────────────────
 
