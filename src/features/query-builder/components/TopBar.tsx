@@ -96,8 +96,6 @@ export default function TopBar({ theme, onThemeChange }: Props) {
   return (
     <header className="relative z-10 flex flex-wrap items-center gap-2 px-4 py-3 sm:flex-nowrap sm:gap-4 sm:px-7 sm:py-4">
       <span className="brand-mark flex items-center gap-2 leading-1 whitespace-nowrap text-[var(--accent-strong)]">
-        <span className="brand-star" aria-hidden="true" />
-        <span className="brand-star brand-star-secondary" aria-hidden="true" />
         <span className="brand-blanc text-[2.75rem] leading-none tracking-tight sm:text-6xl">
           Blanc.
         </span>

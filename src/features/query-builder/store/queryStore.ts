@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import { nanoid } from "nanoid";
 import {
@@ -114,138 +115,151 @@ const initialRoot = (): QueryGroup => ({
 // ── store ─────────────────────────────────────────────────────────────────────
 
 export const useQueryStore = create<QueryStore>()(
-  immer((set, get) => ({
-    root: initialRoot(),
-    schemaId: "users",
-    format: "sql",
-    history: [],
-    presets: [],
+  persist(
+    immer((set, get) => ({
+      root: initialRoot(),
+      schemaId: "users",
+      format: "sql",
+      history: [],
+      presets: [],
 
-    setSchema: (schemaId, firstField) => {
-      set((s) => {
-        s.schemaId = schemaId;
-        s.root = initialRoot();
-        s.root.children.push(makeRule(firstField));
-      });
-    },
-
-    setFormat: (format) =>
-      set((s) => {
-        s.format = format;
-      }),
-
-    addGroup: (parentId, logic = "AND") =>
-      set((s) => {
-        const parent = findNode(s.root, parentId) as QueryGroup | null;
-        if (parent && parent.type === "group") {
-          parent.children.push(makeGroup(logic));
-        }
-      }),
-
-    removeGroup: (groupId) =>
-      set((s) => {
-        removeNode(s.root, groupId);
-      }),
-
-    setGroupLogic: (groupId, logic) =>
-      set((s) => {
-        const node = findNode(s.root, groupId) as QueryGroup | null;
-        if (node?.type === "group") node.logic = logic;
-      }),
-
-    toggleGroupCollapsed: (groupId) =>
-      set((s) => {
-        const node = findNode(s.root, groupId) as QueryGroup | null;
-        if (node?.type === "group") node.collapsed = !node.collapsed;
-      }),
-
-    addRule: (parentId, fieldName) =>
-      set((s) => {
-        const parent = findNode(s.root, parentId) as QueryGroup | null;
-        if (parent?.type === "group") {
-          parent.children.push(makeRule(fieldName));
-        }
-      }),
-
-    removeRule: (ruleId) =>
-      set((s) => {
-        removeNode(s.root, ruleId);
-      }),
-
-    updateRule: (ruleId, patch) =>
-      set((s) => {
-        const node = findNode(s.root, ruleId) as QueryRule | null;
-        if (node?.type === "rule") {
-          Object.assign(node, patch);
-          // if field changed, reset operator/value
-          if (patch.field !== undefined) {
-            node.operator = "equals";
-            node.value = "";
-          }
-        }
-      }),
-
-    reorderChildren: (groupId, fromIndex, toIndex) =>
-      set((s) => {
-        const node = findNode(s.root, groupId) as QueryGroup | null;
-        if (!node || node.type !== "group") return;
-        const children = node.children;
-        const [item] = children.splice(fromIndex, 1);
-        children.splice(toIndex, 0, item);
-      }),
-
-    pushHistory: () =>
-      set((s) => {
-        const snapshot = JSON.parse(JSON.stringify(s.root));
-        s.history.unshift(snapshot);
-        if (s.history.length > 20) s.history.pop();
-      }),
-
-    restoreHistory: (index) =>
-      set((s) => {
-        const snapshot = s.history[index];
-        if (snapshot) s.root = JSON.parse(JSON.stringify(snapshot));
-      }),
-
-    savePreset: (name) =>
-      set((s) => {
-        s.presets.push({
-          id: nanoid(8),
-          name,
-          query: JSON.parse(JSON.stringify(s.root)),
+      setSchema: (schemaId, firstField) => {
+        set((s) => {
+          s.schemaId = schemaId;
+          s.root = initialRoot();
+          s.root.children.push(makeRule(firstField));
         });
-      }),
+      },
 
-    loadPreset: (presetId) =>
-      set((s) => {
-        const preset = s.presets.find((p) => p.id === presetId);
-        if (preset) s.root = JSON.parse(JSON.stringify(preset.query));
-      }),
+      setFormat: (format) =>
+        set((s) => {
+          s.format = format;
+        }),
 
-    deletePreset: (presetId) =>
-      set((s) => {
-        s.presets = s.presets.filter((p) => p.id !== presetId);
-      }),
-
-    importQuery: (json) =>
-      set((s) => {
-        try {
-          const parsed = JSON.parse(json);
-          // basic structural validation
-          if (parsed?.type === "group" && Array.isArray(parsed.children)) {
-            s.root = parsed;
+      addGroup: (parentId, logic = "AND") =>
+        set((s) => {
+          const parent = findNode(s.root, parentId) as QueryGroup | null;
+          if (parent && parent.type === "group") {
+            parent.children.push(makeGroup(logic));
           }
-        } catch {
-          // invalid JSON — ignore silently (caller should surface error)
-        }
-      }),
+        }),
 
-    exportQuery: () => JSON.stringify(get().root, null, 2),
+      removeGroup: (groupId) =>
+        set((s) => {
+          removeNode(s.root, groupId);
+        }),
 
-    reset: (firstField) =>
-      set((s) => {
-        s.root = initialRoot();
-        s.root.children.push(makeRule(firstField));
+      setGroupLogic: (groupId, logic) =>
+        set((s) => {
+          const node = findNode(s.root, groupId) as QueryGroup | null;
+          if (node?.type === "group") node.logic = logic;
+        }),
+
+      toggleGroupCollapsed: (groupId) =>
+        set((s) => {
+          const node = findNode(s.root, groupId) as QueryGroup | null;
+          if (node?.type === "group") node.collapsed = !node.collapsed;
+        }),
+
+      addRule: (parentId, fieldName) =>
+        set((s) => {
+          const parent = findNode(s.root, parentId) as QueryGroup | null;
+          if (parent?.type === "group") {
+            parent.children.push(makeRule(fieldName));
+          }
+        }),
+
+      removeRule: (ruleId) =>
+        set((s) => {
+          removeNode(s.root, ruleId);
+        }),
+
+      updateRule: (ruleId, patch) =>
+        set((s) => {
+          const node = findNode(s.root, ruleId) as QueryRule | null;
+          if (node?.type === "rule") {
+            Object.assign(node, patch);
+            // if field changed, reset operator/value
+            if (patch.field !== undefined) {
+              node.operator = "equals";
+              node.value = "";
+            }
+          }
+        }),
+
+      reorderChildren: (groupId, fromIndex, toIndex) =>
+        set((s) => {
+          const node = findNode(s.root, groupId) as QueryGroup | null;
+          if (!node || node.type !== "group") return;
+          const children = node.children;
+          const [item] = children.splice(fromIndex, 1);
+          children.splice(toIndex, 0, item);
+        }),
+
+      pushHistory: () =>
+        set((s) => {
+          const snapshot = JSON.parse(JSON.stringify(s.root));
+          s.history.unshift(snapshot);
+          if (s.history.length > 20) s.history.pop();
+        }),
+
+      restoreHistory: (index) =>
+        set((s) => {
+          const snapshot = s.history[index];
+          if (snapshot) s.root = JSON.parse(JSON.stringify(snapshot));
+        }),
+
+      savePreset: (name) =>
+        set((s) => {
+          s.presets.push({
+            id: nanoid(8),
+            name,
+            query: JSON.parse(JSON.stringify(s.root)),
+          });
+        }),
+
+      loadPreset: (presetId) =>
+        set((s) => {
+          const preset = s.presets.find((p) => p.id === presetId);
+          if (preset) s.root = JSON.parse(JSON.stringify(preset.query));
+        }),
+
+      deletePreset: (presetId) =>
+        set((s) => {
+          s.presets = s.presets.filter((p) => p.id !== presetId);
+        }),
+
+      importQuery: (json) =>
+        set((s) => {
+          try {
+            const parsed = JSON.parse(json);
+            // basic structural validation
+            if (parsed?.type === "group" && Array.isArray(parsed.children)) {
+              s.root = parsed;
+            }
+          } catch {
+            // invalid JSON — ignore silently (caller should surface error)
+          }
+        }),
+
+      exportQuery: () => JSON.stringify(get().root, null, 2),
+
+      reset: (firstField) =>
+        set((s) => {
+          s.root = initialRoot();
+          s.root.children.push(makeRule(firstField));
+        }),
+    })),
+    {
+      name: "qb-query-store",
+      storage: createJSONStorage(() => localStorage),
+      partialize: ({ root, schemaId, format, history, presets }) => ({
+        root,
+        schemaId,
+        format,
+        history,
+        presets,
       }),
-  })),
+    },
+  ),
 );
