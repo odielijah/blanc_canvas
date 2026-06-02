@@ -13,7 +13,9 @@ import {
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
+  useSortable,
 } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
   QueryGroup as QueryGroupType,
   QueryRule,
@@ -24,7 +26,13 @@ import { useQueryStore } from "@/features/query-builder/store/queryStore";
 import { SCHEMAS } from "@/features/query-builder/lib/schema";
 import { getError } from "@/features/query-builder/lib/validators";
 import { ConditionRule } from "./ConditionRule";
-import { ChevronDownIcon, GroupPlusIcon, PlusIcon, TrashIcon } from "./icons";
+import {
+  ChevronDownIcon,
+  GripDotsIcon,
+  GroupPlusIcon,
+  PlusIcon,
+  TrashIcon,
+} from "./icons";
 
 interface Props {
   group: QueryGroupType;
@@ -60,6 +68,20 @@ export const ConditionGroup = memo(function ConditionGroup({
   const firstField = schema.fields[0].name;
   const colorIdx = Math.min(depth, DEPTH_CLASSES.length - 1);
   const error = getError(group.id, errors);
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: group.id, disabled: isRoot });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.55 : 1,
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -85,6 +107,8 @@ export const ConditionGroup = memo(function ConditionGroup({
 
   return (
     <div
+      ref={setNodeRef}
+      style={style}
       className={`
         condition-group rounded-xl transition-all
         ${DEPTH_CLASSES[colorIdx]}
@@ -94,6 +118,17 @@ export const ConditionGroup = memo(function ConditionGroup({
     >
       {/* Group header */}
       <div className="flex flex-wrap items-center gap-2 px-3 py-2.5">
+        {!isRoot && (
+          <button
+            {...attributes}
+            {...listeners}
+            className="text-muted-theme flex-shrink-0 cursor-grab rounded p-0.5 transition-colors hover:text-[var(--accent-strong)] active:cursor-grabbing"
+            aria-label="Drag group to reorder"
+          >
+            <GripDotsIcon />
+          </button>
+        )}
+
         {/* Collapse toggle */}
         <button
           onClick={() => toggleGroupCollapsed(group.id)}
