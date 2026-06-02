@@ -10,6 +10,8 @@ Blanc is a visual query builder built with Next.js App Router and TypeScript. It
 <img width="1680" height="1050" alt="Screenshot 2026-06-02 at 5 57 04 pm" src="https://github.com/user-attachments/assets/7b80ba8d-d7fd-4916-a802-c927d1bffbe0" />
 <img width="1680" height="1050" alt="Screenshot 2026-06-02 at 5 57 19 pm" src="https://github.com/user-attachments/assets/6d2ec726-0834-4157-b1a4-bbdcac116b6a" />
 <img width="1680" height="1050" alt="Screenshot 2026-06-02 at 6 02 26 pm" src="https://github.com/user-attachments/assets/58858c2c-802e-48c3-a47f-ac76bd384053" />
+<img width="1680" height="1050" alt="Screenshot 2026-06-02 at 6 13 51 pm" src="https://github.com/user-attachments/assets/3128a023-e332-4dc2-be14-99be6568ddc5" />
+
 
 
 ## Features
