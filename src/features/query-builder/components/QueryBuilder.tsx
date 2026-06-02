@@ -16,18 +16,18 @@ export function QueryBuilder() {
   };
 
   return (
-    <div className="flex min-h-[28rem] min-w-0 flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 lg:min-h-0">
-      <div className="flex flex-col gap-2 border-b border-zinc-200 px-4 py-2.5 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
-        <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+    <div className="panel-surface flex min-h-[28rem] min-w-0 flex-col overflow-hidden lg:min-h-0">
+      <div className="panel-header flex flex-col gap-2 px-5 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <span className="panel-title text-xs tracking-[0.7px] uppercase font-semibold">
           Query Builder
         </span>
-        <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-400 dark:text-zinc-500">
+        <div className="text-muted-theme flex flex-wrap items-center gap-2 text-xs">
           <label className="flex min-w-0 items-center gap-1.5">
             <span>Source:</span>
             <select
               value={schemaId}
               onChange={(e) => handleSchemaChange(e.target.value)}
-              className="max-w-full rounded-lg border border-zinc-200 bg-white px-2.5 py-1.5 text-xs font-medium text-zinc-700 focus:outline-none focus:ring-2 focus:ring-violet-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+              className="theme-input max-w-full text-xs font-medium"
             >
               {SCHEMAS.map((s) => (
                 <option key={s.id} value={s.id}>
@@ -37,7 +37,7 @@ export function QueryBuilder() {
             </select>
           </label>
           {errors.length > 0 && (
-            <span className="text-red-500 dark:text-red-400">
+            <span className="danger-pill rounded-full px-2 py-0.5">
               {errors.length} error{errors.length !== 1 ? "s" : ""}
             </span>
           )}
