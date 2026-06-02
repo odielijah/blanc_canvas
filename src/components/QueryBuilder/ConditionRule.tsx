@@ -64,7 +64,7 @@ export const ConditionRule = memo(function ConditionRule({
       ref={setNodeRef}
       style={style}
       className={`
-        group flex items-start gap-2 p-2.5 rounded-lg border transition-all
+        group flex flex-col items-stretch gap-2 p-2.5 rounded-lg border transition-all sm:flex-row sm:items-start
         ${
           error
             ? "border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/20"
@@ -76,7 +76,7 @@ export const ConditionRule = memo(function ConditionRule({
       <button
         {...attributes}
         {...listeners}
-        className="mt-2 cursor-grab active:cursor-grabbing text-zinc-300 dark:text-zinc-600 hover:text-zinc-500 dark:hover:text-zinc-400 flex-shrink-0"
+        className="mt-0 cursor-grab active:cursor-grabbing text-zinc-300 dark:text-zinc-600 hover:text-zinc-500 dark:hover:text-zinc-400 flex-shrink-0 self-start sm:mt-2"
         aria-label="Drag to reorder"
       >
         <svg width="12" height="16" viewBox="0 0 12 16" fill="currentColor">
@@ -126,7 +126,7 @@ export const ConditionRule = memo(function ConditionRule({
       {/* Remove button */}
       <button
         onClick={() => removeRule(rule.id)}
-        className="mt-1.5 flex-shrink-0 p-1.5 rounded-md text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors opacity-0 group-hover:opacity-100"
+        className="mt-0 flex-shrink-0 self-start p-1.5 rounded-md text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors opacity-100 sm:mt-1.5 sm:opacity-0 sm:group-hover:opacity-100"
         aria-label="Remove rule"
       >
         <svg
