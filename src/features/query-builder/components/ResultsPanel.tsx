@@ -4,6 +4,7 @@ import { useQueryStore } from "@/features/query-builder/store/queryStore";
 import { executeQuery } from "@/features/query-builder/lib/queryExecutor";
 import { SCHEMAS } from "@/features/query-builder/lib/schema";
 import { validateQuery } from "@/features/query-builder/lib/validators";
+import { DatabaseIcon, PlayIcon, SearchMinusIcon, SpinnerIcon } from "./icons";
 
 export default function ResultsPanel() {
   const { root, schemaId } = useQueryStore();
@@ -11,6 +12,7 @@ export default function ResultsPanel() {
 
   const [page, setPage] = useState(1);
   const [isRunning, setIsRunning] = useState(false);
+  const [hasRunAttempted, setHasRunAttempted] = useState(false);
   const [hasRun, setHasRun] = useState(false);
   const [results, setResults] = useState<{
     results: Record<string, unknown>[];
@@ -20,10 +22,24 @@ export default function ResultsPanel() {
     totalPages: number;
   } | null>(null);
 
-  const errors = useMemo(() => validateQuery(root, schema), [root, schema]);
+  const errors = useMemo(
+    () =>
+      hasRunAttempted
+        ? validateQuery(root, schema, { requireComplete: true })
+        : [],
+    [root, schema, hasRunAttempted],
+  );
 
   const handleRun = useCallback(async () => {
-    if (errors.length > 0) return;
+    const nextErrors = validateQuery(root, schema, { requireComplete: true });
+    setHasRunAttempted(true);
+
+    if (nextErrors.length > 0) {
+      setHasRun(false);
+      setResults(null);
+      return;
+    }
+
     setIsRunning(true);
     setHasRun(false);
     // simulate async
@@ -31,8 +47,9 @@ export default function ResultsPanel() {
     const res = executeQuery(schemaId, root, page);
     setResults(res);
     setHasRun(true);
+    setHasRunAttempted(false);
     setIsRunning(false);
-  }, [schemaId, root, page, errors]);
+  }, [schemaId, root, schema, page]);
 
   const handlePageChange = useCallback(
     async (newPage: number) => {
@@ -49,13 +66,13 @@ export default function ResultsPanel() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex flex-col gap-2 px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
+      <div className="panel-header flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 flex-wrap items-center gap-3">
-          <span className="text-sm font-semibold text-zinc-700 dark:text-zinc-200">
+          <span className="panel-title text-xs tracking-[0.7px] uppercase font-semibold">
             Results
           </span>
           {hasRun && results && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-medium">
+            <span className="status-pill rounded-full px-2 py-0.5 text-xs font-medium">
               {results.total} row{results.total !== 1 ? "s" : ""}
             </span>
           )}
@@ -63,41 +80,19 @@ export default function ResultsPanel() {
 
         <button
           onClick={handleRun}
-          disabled={isRunning || errors.length > 0}
+          disabled={isRunning}
           className={`
-            flex w-full items-center justify-center gap-2 rounded-lg px-4 py-1.5 text-sm font-semibold transition-all sm:w-auto
-            ${
-              errors.length > 0
-                ? "opacity-40 cursor-not-allowed bg-zinc-200 dark:bg-zinc-700 text-zinc-500"
-                : "bg-violet-600 hover:bg-violet-700 active:scale-95 text-white"
-            }
+            accent-button flex w-full items-center justify-center gap-2 rounded-lg px-4 py-1.5 text-sm font-semibold transition-all active:scale-95 sm:w-auto
           `}
         >
           {isRunning ? (
             <>
-              <svg
-                className="animate-spin"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-              >
-                <path d="M21 12a9 9 0 11-6.219-8.56" />
-              </svg>
+              <SpinnerIcon className="h-3.5 w-3.5 animate-spin" />
               Running…
             </>
           ) : (
             <>
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <polygon points="5 3 19 12 5 21 5 3" />
-              </svg>
+              <PlayIcon />
               Run Query
             </>
           )}
@@ -106,16 +101,16 @@ export default function ResultsPanel() {
 
       {/* Validation errors */}
       {errors.length > 0 && (
-        <div className="mx-4 mt-3 p-3 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900">
-          <p className="text-xs font-semibold text-red-600 dark:text-red-400 mb-1">
+        <div className="danger-panel mx-4 mt-3 rounded-lg p-3">
+          <p className="mb-1 text-xs font-semibold">
             Fix {errors.length} error{errors.length !== 1 ? "s" : ""} before
             running
           </p>
-          <ul className="text-xs text-red-500 dark:text-red-400 space-y-0.5">
+          <ul className="space-y-0.5 text-xs">
             {errors.slice(0, 3).map((e) => (
-              <li key={e.nodeId}>• {e.message}</li>
+              <li key={e.nodeId}>- {e.message}</li>
             ))}
-            {errors.length > 3 && <li>• …and {errors.length - 3} more</li>}
+            {errors.length > 3 && <li>- and {errors.length - 3} more</li>}
           </ul>
         </div>
       )}
@@ -123,37 +118,15 @@ export default function ResultsPanel() {
       {/* Content */}
       <div className="flex-1 overflow-auto">
         {!hasRun && !isRunning && (
-          <div className="flex flex-col items-center justify-center h-full gap-3 text-zinc-400 dark:text-zinc-600">
-            <svg
-              width="40"
-              height="40"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            >
-              <ellipse cx="12" cy="5" rx="9" ry="3" />
-              <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
-              <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
-            </svg>
+          <div className="empty-state flex h-full flex-col items-center justify-center gap-3">
+            <DatabaseIcon />
             <p className="text-sm">Build a query and run it to see results</p>
           </div>
         )}
 
         {isRunning && (
-          <div className="flex flex-col items-center justify-center h-full gap-3 text-zinc-400 dark:text-zinc-600">
-            <svg
-              className="animate-spin"
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              <path d="M21 12a9 9 0 11-6.219-8.56" />
-            </svg>
+          <div className="empty-state flex h-full flex-col items-center justify-center gap-3">
+            <SpinnerIcon className="h-8 w-8 animate-spin" strokeWidth="2" />
             <p className="text-sm">Executing query…</p>
           </div>
         )}
@@ -161,30 +134,19 @@ export default function ResultsPanel() {
         {hasRun && results && !isRunning && (
           <>
             {results.results.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full gap-2 text-zinc-400 dark:text-zinc-600">
-                <svg
-                  width="40"
-                  height="40"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                >
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                  <line x1="8" y1="11" x2="14" y2="11" />
-                </svg>
+              <div className="empty-state flex h-full flex-col items-center justify-center gap-2">
+                <SearchMinusIcon />
                 <p className="text-sm">No results match your query</p>
               </div>
             ) : (
               <div className="overflow-auto">
-                <table className="w-full text-xs border-collapse">
+                <table className="data-table w-full border-collapse text-xs">
                   <thead>
-                    <tr className="bg-zinc-50 dark:bg-zinc-800/60 sticky top-0">
+                    <tr className="sticky top-0">
                       {schema.fields.map((f) => (
                         <th
                           key={f.name}
-                          className="text-left px-3 py-2 font-semibold text-zinc-500 dark:text-zinc-400 border-b border-zinc-200 dark:border-zinc-700 whitespace-nowrap"
+                          className="whitespace-nowrap px-3 py-2 text-left font-semibold"
                         >
                           {f.label}
                         </th>
@@ -195,12 +157,12 @@ export default function ResultsPanel() {
                     {results.results.map((row, i) => (
                       <tr
                         key={i}
-                        className="border-b border-zinc-100 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors"
+                        className="transition-colors"
                       >
                         {schema.fields.map((f) => (
                           <td
                             key={f.name}
-                            className="px-3 py-2 text-zinc-700 dark:text-zinc-300 whitespace-nowrap max-w-[180px] truncate"
+                            className="max-w-[180px] truncate whitespace-nowrap px-3 py-2"
                           >
                             {renderCell(row[f.name], f.type)}
                           </td>
@@ -217,9 +179,9 @@ export default function ResultsPanel() {
 
       {/* Pagination */}
       {hasRun && results && results.totalPages > 1 && (
-        <div className="flex items-center justify-between px-4 py-2.5 border-t border-zinc-200 dark:border-zinc-800 text-xs text-zinc-500 dark:text-zinc-400">
+        <div className="text-muted-theme flex items-center justify-between px-4 py-2.5 text-xs">
           <span>
-            {(results.page - 1) * results.pageSize + 1}–
+            {(results.page - 1) * results.pageSize + 1}-
             {Math.min(results.page * results.pageSize, results.total)} of{" "}
             {results.total}
           </span>
@@ -227,9 +189,9 @@ export default function ResultsPanel() {
             <button
               onClick={() => handlePageChange(results.page - 1)}
               disabled={results.page <= 1}
-              className="px-2 py-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"
+              className="ghost-button rounded px-2 py-1 transition-colors disabled:opacity-30"
             >
-              ‹ Prev
+              Prev
             </button>
             <span className="px-2">
               {results.page} / {results.totalPages}
@@ -237,9 +199,9 @@ export default function ResultsPanel() {
             <button
               onClick={() => handlePageChange(results.page + 1)}
               disabled={results.page >= results.totalPages}
-              className="px-2 py-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-30 transition-colors"
+              className="ghost-button rounded px-2 py-1 transition-colors disabled:opacity-30"
             >
-              Next ›
+              Next
             </button>
           </div>
         </div>
@@ -250,17 +212,15 @@ export default function ResultsPanel() {
 
 function renderCell(value: unknown, type: string): React.ReactNode {
   if (value === null || value === undefined) {
-    return (
-      <span className="text-zinc-300 dark:text-zinc-600 italic">null</span>
-    );
+    return <span className="text-muted-theme italic">null</span>;
   }
   if (type === "boolean") {
     return (
       <span
-        className={`px-1.5 py-0.5 rounded text-xs font-medium ${
+        className={`rounded px-1.5 py-0.5 text-xs font-medium ${
           value
-            ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
-            : "bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300"
+            ? "boolean-pill-true"
+            : "boolean-pill-false"
         }`}
       >
         {String(value)}
@@ -269,7 +229,7 @@ function renderCell(value: unknown, type: string): React.ReactNode {
   }
   if (type === "enum") {
     return (
-      <span className="px-1.5 py-0.5 rounded text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 font-mono">
+      <span className="enum-pill rounded px-1.5 py-0.5 font-mono text-xs">
         {String(value)}
       </span>
     );
