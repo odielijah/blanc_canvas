@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useRef, useState } from "react";
 import { useQueryStore } from "@/features/query-builder/store/queryStore";
 import { SCHEMAS } from "@/features/query-builder/lib/schema";
@@ -95,14 +96,16 @@ export default function TopBar({ theme, onThemeChange }: Props) {
 
   return (
     <header className="relative z-[80] flex flex-wrap items-center gap-2 px-4 py-3 sm:flex-nowrap sm:gap-4 sm:px-7 sm:py-4">
-      <span
+      <Link
+        href="/"
         className="brand-mark flex items-center gap-2 leading-1 whitespace-nowrap text-[var(--accent-strong)]"
         data-logo="Blanc."
+        aria-label="Go to home page"
       >
         <span className="brand-blanc text-[2.75rem] leading-none tracking-tight sm:text-6xl">
           Blanc.
         </span>
-      </span>
+      </Link>
 
       <nav className="order-3 flex w-full min-w-0 flex-wrap items-center justify-start gap-1 sm:order-none sm:ml-auto sm:w-auto sm:flex-nowrap sm:justify-end">
         <button
