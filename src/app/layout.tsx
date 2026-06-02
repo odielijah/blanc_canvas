@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque } from "next/font/google";
+import { Bricolage_Grotesque, Yellowtail } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 
@@ -7,6 +7,16 @@ const bricolageGrotesque = Bricolage_Grotesque({
   weight: ["200", "300", "400", "500", "600", "700", "800"],
   subsets: ["latin"],
   variable: "--font-bricolage",
+  display: "swap",
+  preload: false,
+});
+
+const yellowtail = Yellowtail({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-yellowtail",
+  display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -36,7 +46,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={bricolageGrotesque.variable}
+      className={`${bricolageGrotesque.variable} ${yellowtail.variable}`}
       suppressHydrationWarning
     >
       <body>
