@@ -123,6 +123,26 @@ describe("executeQuery", () => {
     expect(results).toHaveLength(0);
   });
 
+  it("filters date ranges with between", () => {
+    const group = makeGroup({
+      children: [
+        makeRule({
+          field: "createdAt",
+          operator: "between",
+          value: ["2024-01-01", "2024-12-31"],
+        }),
+      ],
+    });
+    const { results } = executeQuery("users", group, 1, 100);
+    results.forEach((r) => {
+      const time = new Date(String(r.createdAt)).getTime();
+      expect(time).toBeGreaterThanOrEqual(
+        new Date("2024-01-01").getTime(),
+      );
+      expect(time).toBeLessThanOrEqual(new Date("2024-12-31").getTime());
+    });
+  });
+
   it("handles unknown schema gracefully", () => {
     const { total } = executeQuery("nonexistent", makeGroup(), 1, 10);
     expect(total).toBe(0);

@@ -19,28 +19,32 @@ export default function ValueInput({
     const arr = Array.isArray(rule.value)
       ? (rule.value as [string, string])
       : ["", ""];
+    const inputType = fieldType === "date" ? "date" : "number";
+    const placeholders =
+      fieldType === "date" ? ["Start date", "End date"] : ["Min", "Max"];
+
     return (
       <div className="flex flex-wrap items-center gap-1.5">
         <input
-          type="number"
+          type={inputType}
           value={arr[0]}
           onChange={(e) =>
             onChange([e.target.value, arr[1]] as [string, string])
           }
-          placeholder="Min"
+          placeholder={placeholders[0]}
           className={`${cls} min-w-24 flex-1`}
-          aria-label="Minimum value"
+          aria-label={placeholders[0]}
         />
         <span className="text-muted-theme text-xs">-</span>
         <input
-          type="number"
+          type={inputType}
           value={arr[1]}
           onChange={(e) =>
             onChange([arr[0], e.target.value] as [string, string])
           }
-          placeholder="Max"
+          placeholder={placeholders[1]}
           className={`${cls} min-w-24 flex-1`}
-          aria-label="Maximum value"
+          aria-label={placeholders[1]}
         />
       </div>
     );
