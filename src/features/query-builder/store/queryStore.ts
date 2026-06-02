@@ -10,6 +10,7 @@ import {
   LogicOperator,
   QueryFormat,
 } from "@/shared/types/query";
+import { isImportedQueryGroup } from "@/features/query-builder/lib/validators";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -192,6 +193,14 @@ export const useQueryStore = create<QueryStore>()(
           const node = findNode(s.root, groupId) as QueryGroup | null;
           if (!node || node.type !== "group") return;
           const children = node.children;
+          if (
+            fromIndex < 0 ||
+            toIndex < 0 ||
+            fromIndex >= children.length ||
+            toIndex >= children.length
+          ) {
+            return;
+          }
           const [item] = children.splice(fromIndex, 1);
           children.splice(toIndex, 0, item);
         }),
@@ -233,12 +242,11 @@ export const useQueryStore = create<QueryStore>()(
         set((s) => {
           try {
             const parsed = JSON.parse(json);
-            // basic structural validation
-            if (parsed?.type === "group" && Array.isArray(parsed.children)) {
-              s.root = parsed;
+            if (isImportedQueryGroup(parsed)) {
+              s.root = JSON.parse(JSON.stringify(parsed));
             }
           } catch {
-            // invalid JSON — ignore silently (caller should surface error)
+            // Invalid JSON is ignored here; callers surface validation errors.
           }
         }),
 
