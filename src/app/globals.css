@@ -3,15 +3,39 @@
 
 .brand-blanc {
   position: relative;
-  z-index: 1;
-  font-family: var(--font-bricolage), sans-serif;
-  font-weight: 800;
-  letter-spacing: 0.04em;
+  z-index: 70;
+  font-family: var(--font-yellowtail), cursive;
+  font-weight: 400;
+  letter-spacing: 0;
+  animation: brand-header-reveal 1280ms cubic-bezier(0.76, 0, 0.24, 1) both;
 }
 
 .brand-mark {
   position: relative;
+  z-index: 70;
   isolation: isolate;
+  --brand-loader-target-x: 1rem;
+  --brand-loader-target-y: 0.75rem;
+  --brand-loader-target-scale: 0.48;
+}
+
+.brand-mark::before {
+  content: attr(data-logo);
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 90;
+  color: var(--accent-strong);
+  font-family: var(--font-yellowtail), cursive;
+  font-size: clamp(4.25rem, 12vw, 8.5rem);
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(1);
+  transform-origin: center;
+  animation: brand-loader-center 1280ms cubic-bezier(0.76, 0, 0.24, 1) both;
+  will-change: transform, opacity;
 }
 
 :root,
@@ -113,10 +137,21 @@
       linear-gradient(90deg, transparent 0 72%, var(--mint) 72% 100%),
       var(--app-bg);
     color: var(--text);
+    animation: app-loader-wash 1280ms ease-out both;
   }
 
   .app-frame {
     position: relative;
+  }
+
+  .app-frame::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    background: var(--app-bg);
+    animation: loader-curtain 1280ms cubic-bezier(0.76, 0, 0.24, 1) both;
   }
 
   .app-frame::before {
@@ -132,6 +167,16 @@
     border: 1px solid var(--border);
     border-radius: 0.375rem;
     background: var(--surface);
+    animation: panel-rise-stagger 620ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: 980ms;
+  }
+
+  .app-grid > div .panel-surface:first-child {
+    animation-delay: 1080ms;
+  }
+
+  .app-grid > div .panel-surface:last-child {
+    animation-delay: 1180ms;
   }
 
   .panel-header {
@@ -391,6 +436,8 @@
     transition:
       color 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
       background-color 260ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    animation: topbar-control-enter 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: 1160ms;
   }
 
   .topbar-btn:hover,
@@ -433,6 +480,117 @@
     max-width: 0;
     opacity: 0;
     transform: translateX(-0.25rem);
+  }
+}
+
+@media (min-width: 640px) {
+  .brand-mark {
+    --brand-loader-target-x: 1.75rem;
+    --brand-loader-target-y: 1rem;
+    --brand-loader-target-scale: 0.44;
+  }
+}
+
+@keyframes brand-loader-center {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+
+  18% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  62% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform:
+      translate(
+        calc(-50vw + var(--brand-loader-target-x)),
+        calc(-50vh + var(--brand-loader-target-y))
+      )
+      scale(var(--brand-loader-target-scale));
+  }
+}
+
+@keyframes brand-header-reveal {
+  0%,
+  68% {
+    opacity: 0;
+    transform: translateY(0.35rem) scale(0.96);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes loader-curtain {
+  0% {
+    opacity: 1;
+  }
+
+  54% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes app-loader-wash {
+  0% {
+    filter: saturate(0.9) brightness(0.92);
+  }
+
+  100% {
+    filter: saturate(1) brightness(1);
+  }
+}
+
+@keyframes panel-rise-stagger {
+  from {
+    opacity: 0;
+    transform: translateY(1.35rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes topbar-control-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-0.375rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-blanc,
+  .brand-mark::before,
+  .app-shell,
+  .app-frame::after,
+  .panel-surface,
+  .topbar-btn {
+    animation: none;
+  }
+
+  .app-frame::after {
+    opacity: 0;
   }
 }
 
