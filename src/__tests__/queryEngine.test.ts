@@ -228,11 +228,19 @@ describe("validateQuery", () => {
     expect(errors).toHaveLength(0);
   });
 
-  it("returns error for empty value on non-null operator", () => {
+  it("treats empty value rules as drafts", () => {
     const group = makeGroup({
       children: [makeRule({ operator: "equals", value: "" })],
     });
     const errors = validateQuery(group, usersSchema);
+    expect(errors).toHaveLength(0);
+  });
+
+  it("requires empty value rules in strict mode", () => {
+    const group = makeGroup({
+      children: [makeRule({ operator: "equals", value: "" })],
+    });
+    const errors = validateQuery(group, usersSchema, { requireComplete: true });
     expect(errors.some((e) => e.message === "Value is required")).toBe(true);
   });
 
@@ -266,10 +274,17 @@ describe("validateQuery", () => {
     expect(errors.some((e) => e.message.includes("number"))).toBe(true);
   });
 
-  it("flags empty nested group", () => {
+  it("treats empty nested groups as drafts", () => {
     const nested = makeGroup({ id: "nested" });
     const root = makeGroup({ children: [nested] });
     const errors = validateQuery(root, usersSchema);
+    expect(errors).toHaveLength(0);
+  });
+
+  it("requires empty nested groups in strict mode", () => {
+    const nested = makeGroup({ id: "nested" });
+    const root = makeGroup({ children: [nested] });
+    const errors = validateQuery(root, usersSchema, { requireComplete: true });
     expect(errors.some((e) => e.nodeId === "nested")).toBe(true);
   });
 
