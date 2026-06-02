@@ -4,9 +4,8 @@ Blanc is a visual query builder built with Next.js App Router and TypeScript. It
 
 ## Submission Links
 
-- Repository: add GitHub repository URL
-- Live deployment: add Vercel or Netlify production URL
-- Demo video: add demo video URL
+- [Repo Link](https://github.com/odielijah/blanc_canvas)
+- [Live deployment URL](https://blanc-canvas-b1kn.vercel.app/)
 
 ## Features
 
