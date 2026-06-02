@@ -9,6 +9,7 @@ import { getError } from "@/features/query-builder/lib/validators";
 import FieldSelector from "./FieldSelector";
 import OperatorSelector from "./OperatorSelector";
 import ValueInput from "./ValueInput";
+import { GripDotsIcon, XIcon } from "./icons";
 
 interface Props {
   rule: QueryRule;
@@ -64,11 +65,11 @@ export const ConditionRule = memo(function ConditionRule({
       ref={setNodeRef}
       style={style}
       className={`
-        group flex flex-col items-stretch gap-2 p-2.5 rounded-lg border transition-all sm:flex-row sm:items-start
+        condition-rule group flex flex-col items-stretch gap-2 rounded-lg p-2.5 transition-all sm:flex-row sm:items-start
         ${
           error
-            ? "border-red-300 dark:border-red-800 bg-red-50 dark:bg-red-950/20"
-            : "border-transparent hover:border-zinc-200 dark:hover:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/40"
+            ? "condition-rule-error"
+            : ""
         }
       `}
     >
@@ -76,17 +77,10 @@ export const ConditionRule = memo(function ConditionRule({
       <button
         {...attributes}
         {...listeners}
-        className="mt-0 cursor-grab active:cursor-grabbing text-zinc-300 dark:text-zinc-600 hover:text-zinc-500 dark:hover:text-zinc-400 flex-shrink-0 self-start sm:mt-2"
+        className="text-muted-theme mt-0 flex-shrink-0 cursor-grab self-start transition-colors hover:text-[var(--accent-strong)] active:cursor-grabbing sm:mt-2"
         aria-label="Drag to reorder"
       >
-        <svg width="12" height="16" viewBox="0 0 12 16" fill="currentColor">
-          <circle cx="4" cy="3" r="1.5" />
-          <circle cx="8" cy="3" r="1.5" />
-          <circle cx="4" cy="8" r="1.5" />
-          <circle cx="8" cy="8" r="1.5" />
-          <circle cx="4" cy="13" r="1.5" />
-          <circle cx="8" cy="13" r="1.5" />
-        </svg>
+        <GripDotsIcon />
       </button>
 
       {/* Field selector */}
@@ -118,7 +112,7 @@ export const ConditionRule = memo(function ConditionRule({
 
       {/* Inline error */}
       {error && (
-        <span className="text-xs text-red-500 dark:text-red-400 mt-2.5 whitespace-nowrap">
+        <span className="mt-2.5 whitespace-nowrap text-xs text-[var(--danger)]">
           {error}
         </span>
       )}
@@ -126,21 +120,10 @@ export const ConditionRule = memo(function ConditionRule({
       {/* Remove button */}
       <button
         onClick={() => removeRule(rule.id)}
-        className="mt-0 flex-shrink-0 self-start p-1.5 rounded-md text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors opacity-100 sm:mt-1.5 sm:opacity-0 sm:group-hover:opacity-100"
+        className="danger-button mt-0 flex-shrink-0 self-start rounded-md p-1.5 opacity-100 transition-colors sm:mt-1.5 sm:opacity-0 sm:group-hover:opacity-100"
         aria-label="Remove rule"
       >
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-        >
-          <line x1="18" y1="6" x2="6" y2="18" />
-          <line x1="6" y1="6" x2="18" y2="18" />
-        </svg>
+        <XIcon />
       </button>
     </div>
   );
