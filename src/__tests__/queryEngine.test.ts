@@ -1,9 +1,13 @@
 import { describe, it, expect } from "vitest";
 import {
+  generateGraphQL,
   generateSQL,
   generateMongo,
 } from "@/features/query-builder/lib/queryEngine";
-import { validateQuery } from "@/features/query-builder/lib/validators";
+import {
+  validateImportedJSON,
+  validateQuery,
+} from "@/features/query-builder/lib/validators";
 import { QueryGroup, QueryRule } from "@/shared/types/query";
 import { SCHEMAS } from "@/features/query-builder/lib/schema";
 
@@ -129,6 +133,16 @@ describe("generateSQL", () => {
     expect(sql).toContain("O''Brien");
   });
 
+  it("escapes single quotes in LIKE pattern values", () => {
+    const group = makeGroup({
+      children: [
+        makeRule({ field: "name", operator: "contains", value: "O'Brien" }),
+      ],
+    });
+    const sql = generateSQL(group, "users");
+    expect(sql).toContain("LIKE '%O''Brien%'");
+  });
+
   it("generates nested groups with parentheses", () => {
     const nested = makeGroup({
       id: "nested",
@@ -217,6 +231,34 @@ describe("generateMongo", () => {
     const result = JSON.parse(generateMongo(group));
     expect(result.name.$regex).toBe("john");
   });
+
+  it("escapes regex syntax for literal contains filters", () => {
+    const group = makeGroup({
+      children: [
+        makeRule({ field: "name", operator: "contains", value: "a.b*" }),
+      ],
+    });
+    const result = JSON.parse(generateMongo(group));
+    expect(result.name.$regex).toBe("a\\.b\\*");
+  });
+});
+
+// ── GraphQL Generator ─────────────────────────────────────────────────────
+
+describe("generateGraphQL", () => {
+  it("escapes string values as GraphQL literals", () => {
+    const group = makeGroup({
+      children: [
+        makeRule({
+          field: "name",
+          operator: "equals",
+          value: 'Ada "Ace"',
+        }),
+      ],
+    });
+    const gql = generateGraphQL(group, "users");
+    expect(gql).toContain('name: { eq: "Ada \\"Ace\\"" }');
+  });
 });
 
 // ── Validation Engine ──────────────────────────────────────────────────────
@@ -294,5 +336,87 @@ describe("validateQuery", () => {
     });
     const errors = validateQuery(group, usersSchema);
     expect(errors.some((e) => e.message.includes("≤"))).toBe(true);
+  });
+
+  it("flags date between ranges in the wrong order", () => {
+    const group = makeGroup({
+      children: [
+        makeRule({
+          field: "createdAt",
+          operator: "between",
+          value: ["2024-06-01", "2024-01-01"],
+        }),
+      ],
+    });
+    const errors = validateQuery(group, usersSchema);
+    expect(errors.some((e) => e.message.includes("≤"))).toBe(true);
+  });
+});
+
+// ── Import Validation ─────────────────────────────────────────────────────
+
+describe("validateImportedJSON", () => {
+  it("accepts a valid nested query tree", () => {
+    const result = validateImportedJSON(
+      JSON.stringify({
+        id: "root",
+        type: "group",
+        logic: "AND",
+        children: [
+          {
+            id: "nested",
+            type: "group",
+            logic: "OR",
+            children: [
+              {
+                id: "r1",
+                type: "rule",
+                field: "name",
+                operator: "contains",
+                value: "Ada",
+              },
+            ],
+          },
+        ],
+      }),
+    );
+
+    expect(result.valid).toBe(true);
+  });
+
+  it("rejects malformed nested child nodes", () => {
+    const result = validateImportedJSON(
+      JSON.stringify({
+        id: "root",
+        type: "group",
+        logic: "AND",
+        children: [{ id: "bad", type: "group", logic: "AND" }],
+      }),
+    );
+
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain("children array");
+  });
+
+  it("rejects unsupported imported operators", () => {
+    const result = validateImportedJSON(
+      JSON.stringify({
+        id: "root",
+        type: "group",
+        logic: "AND",
+        children: [
+          {
+            id: "r1",
+            type: "rule",
+            field: "name",
+            operator: "$where",
+            value: "true",
+          },
+        ],
+      }),
+    );
+
+    expect(result.valid).toBe(false);
+    expect(result.error).toContain("operator");
   });
 });
