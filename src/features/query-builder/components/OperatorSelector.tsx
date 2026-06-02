@@ -1,6 +1,6 @@
 "use client";
 import { memo } from "react";
-import { FieldType, Operator, OPERATORS_BY_TYPE, OPERATOR_LABELS } from "@/types/query";
+import { FieldType, Operator, OPERATORS_BY_TYPE, OPERATOR_LABELS } from "@/shared/types/query";
 
 interface Props {
   fieldType: FieldType;

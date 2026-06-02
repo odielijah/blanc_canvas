@@ -2,10 +2,10 @@
 import { memo, useCallback } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { QueryRule, FieldType, ValidationError } from "@/types/query";
-import { useQueryStore } from "@/store/queryStore";
-import { SCHEMAS } from "@/lib/schema";
-import { getError } from "@/lib/validators";
+import { QueryRule, FieldType, ValidationError } from "@/shared/types/query";
+import { useQueryStore } from "@/features/query-builder/store/queryStore";
+import { SCHEMAS } from "@/features/query-builder/lib/schema";
+import { getError } from "@/features/query-builder/lib/validators";
 import FieldSelector from "./FieldSelector";
 import OperatorSelector from "./OperatorSelector";
 import ValueInput from "./ValueInput";

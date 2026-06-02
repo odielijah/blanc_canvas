@@ -2,11 +2,10 @@ import { describe, it, expect } from "vitest";
 import {
   generateSQL,
   generateMongo,
-  generateGraphQL,
-} from "../lib/queryEngine";
-import { validateQuery } from "../lib/validators";
-import { QueryGroup, QueryRule } from "../types/query";
-import { SCHEMAS } from "../lib/schema";
+} from "@/features/query-builder/lib/queryEngine";
+import { validateQuery } from "@/features/query-builder/lib/validators";
+import { QueryGroup, QueryRule } from "@/shared/types/query";
+import { SCHEMAS } from "@/features/query-builder/lib/schema";
 
 const usersSchema = SCHEMAS.find((s) => s.id === "users")!;
 

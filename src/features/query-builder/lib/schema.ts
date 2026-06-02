@@ -1,4 +1,4 @@
-import { DataSchema } from "@/types/query";
+import { DataSchema } from "@/shared/types/query";
 
 export const SCHEMAS: DataSchema[] = [
   {

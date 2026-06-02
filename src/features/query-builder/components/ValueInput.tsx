@@ -1,4 +1,4 @@
-import type { FieldType, QueryRule } from "@/types/query";
+import type { FieldType, QueryRule } from "@/shared/types/query";
 
 interface ValueInputProps {
   rule: QueryRule;

@@ -1,13 +1,10 @@
 import {
   QueryGroup,
   QueryRule,
-  QueryNode,
   ValidationError,
-  FieldType,
-  Operator,
   OPERATORS_BY_TYPE,
-} from "@/types/query";
-import { DataSchema } from "@/types/query";
+  DataSchema,
+} from "@/shared/types/query";
 
 function validateRule(
   rule: QueryRule,
@@ -142,7 +139,7 @@ export function validateImportedJSON(json: string): {
       return { valid: false, error: 'Logic must be "AND" or "OR"' };
     }
     return { valid: true };
-  } catch (e) {
+  } catch {
     return { valid: false, error: "Invalid JSON" };
   }
 }

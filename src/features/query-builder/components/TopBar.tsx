@@ -1,8 +1,8 @@
 "use client";
 import { useRef, useState } from "react";
-import { useQueryStore } from "@/store/queryStore";
-import { SCHEMAS } from "@/lib/schema";
-import { validateImportedJSON } from "@/lib/validators";
+import { useQueryStore } from "@/features/query-builder/store/queryStore";
+import { SCHEMAS } from "@/features/query-builder/lib/schema";
+import { validateImportedJSON } from "@/features/query-builder/lib/validators";
 
 interface Props {
   darkMode: boolean;

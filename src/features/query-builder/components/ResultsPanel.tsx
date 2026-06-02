@@ -1,9 +1,9 @@
 "use client";
 import { useState, useMemo, useCallback } from "react";
-import { useQueryStore } from "@/store/queryStore";
-import { executeQuery } from "@/lib/queryExecutor";
-import { SCHEMAS } from "@/lib/schema";
-import { validateQuery } from "@/lib/validators";
+import { useQueryStore } from "@/features/query-builder/store/queryStore";
+import { executeQuery } from "@/features/query-builder/lib/queryExecutor";
+import { SCHEMAS } from "@/features/query-builder/lib/schema";
+import { validateQuery } from "@/features/query-builder/lib/validators";
 
 export default function ResultsPanel() {
   const { root, schemaId } = useQueryStore();

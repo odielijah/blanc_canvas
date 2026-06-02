@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { executeQuery } from "../lib/queryExecutor";
-import { QueryGroup, QueryRule } from "../types/query";
+import { executeQuery } from "@/features/query-builder/lib/queryExecutor";
+import { QueryGroup, QueryRule } from "@/shared/types/query";
 
 function makeRule(overrides: Partial<QueryRule> = {}): QueryRule {
   return {

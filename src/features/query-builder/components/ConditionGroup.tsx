@@ -19,10 +19,10 @@ import {
   QueryRule,
   LogicOperator,
   ValidationError,
-} from "@/types/query";
-import { useQueryStore } from "@/store/queryStore";
-import { SCHEMAS } from "@/lib/schema";
-import { getError } from "@/lib/validators";
+} from "@/shared/types/query";
+import { useQueryStore } from "@/features/query-builder/store/queryStore";
+import { SCHEMAS } from "@/features/query-builder/lib/schema";
+import { getError } from "@/features/query-builder/lib/validators";
 import { ConditionRule } from "./ConditionRule";
 
 interface Props {

@@ -1,8 +1,8 @@
 "use client";
 import { useMemo, useState } from "react";
-import { useQueryStore } from "@/store/queryStore";
-import { generateQuery } from "@/lib/queryEngine";
-import { QueryFormat } from "@/types/query";
+import { useQueryStore } from "@/features/query-builder/store/queryStore";
+import { generateQuery } from "@/features/query-builder/lib/queryEngine";
+import { QueryFormat } from "@/shared/types/query";
 
 const FORMAT_OPTIONS: { value: QueryFormat; label: string }[] = [
   { value: "sql", label: "SQL" },
