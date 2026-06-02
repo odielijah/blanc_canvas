@@ -105,11 +105,11 @@ export const ConditionGroup = memo(function ConditionGroup({
         rounded-xl border transition-all
         ${DEPTH_COLORS[colorIdx]} ${DEPTH_BG[colorIdx]}
         ${error ? "ring-1 ring-red-400 dark:ring-red-700" : ""}
-        ${depth > 0 ? "ml-6" : ""}
+        ${depth > 0 ? "ml-3 sm:ml-6" : ""}
       `}
     >
       {/* Group header */}
-      <div className="flex items-center gap-2 px-3 py-2.5 border-b border-inherit">
+      <div className="flex flex-wrap items-center gap-2 px-3 py-2.5 border-b border-inherit">
         {/* Collapse toggle */}
         <button
           onClick={() => toggleGroupCollapsed(group.id)}
@@ -173,7 +173,7 @@ export const ConditionGroup = memo(function ConditionGroup({
           {group.children.length === 1 ? "condition" : "conditions"}
         </span>
 
-        <div className="ml-auto flex items-center gap-1">
+        <div className="ml-auto flex flex-wrap items-center gap-1">
           {/* Add rule */}
           <button
             onClick={() => addRule(group.id, firstField)}
