@@ -20,7 +20,7 @@ export default function ValueInput({
       ? (rule.value as [string, string])
       : ["", ""];
     return (
-      <div className="flex items-center gap-1.5">
+      <div className="flex flex-wrap items-center gap-1.5">
         <input
           type="number"
           value={arr[0]}
@@ -28,7 +28,7 @@ export default function ValueInput({
             onChange([e.target.value, arr[1]] as [string, string])
           }
           placeholder="Min"
-          className={`${cls} w-24`}
+          className={`${cls} min-w-24 flex-1`}
           aria-label="Minimum value"
         />
         <span className="text-xs text-zinc-400">–</span>
@@ -39,7 +39,7 @@ export default function ValueInput({
             onChange([arr[0], e.target.value] as [string, string])
           }
           placeholder="Max"
-          className={`${cls} w-24`}
+          className={`${cls} min-w-24 flex-1`}
           aria-label="Maximum value"
         />
       </div>
